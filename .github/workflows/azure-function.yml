@@ -1,0 +1,33 @@
+name: Deploy Azure Function
+
+on:
+  push:
+    paths:
+      - 'functions/**'  # Monitor changes in the 'functions' directory
+    branches:
+      - main  # Trigger deployment on push to the 'main' branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest  # Specify the runner for your workflow
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3  # Checkout the code
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.10'  # Set the Python version
+
+      - name: Zip and Deploy Function
+        run: |
+          cd functions  # Go to the 'functions' directory
+          zip -r ../function.zip .  # Zip all files in the 'functions' directory
+        name: Zip function code
+
+      - uses: Azure/functions-action@v1
+        with:
+          app-name: RoadMonitorFuncApp  # Azure Function App name
+          package: function.zip  # Path to the zipped function
+          publish-profile: ${{ secrets.AZURE_PUBLISH_PROFILE }}  # Publish profile secret
